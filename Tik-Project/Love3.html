@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Love Hunt - Anniversary Game</title>
+  <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Nunito&display=swap" rel="stylesheet">
+  <style>
+    body {
+      background: linear-gradient(135deg, #fff0f5, #ffe0ec);
+      font-family: 'Nunito', sans-serif;
+      text-align: center;
+      padding: 20px;
+      overflow-x: hidden;
+    }
+
+    h1 {
+      font-family: 'Great Vibes', cursive;
+      font-size: 3.2rem;
+      color: #d63384;
+      margin-bottom: 5px;
+    }
+
+    .instructions {
+      font-size: 1.1rem;
+      color: #a61e4d;
+      margin-bottom: 30px;
+    }
+
+    .heart-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(45px, 1fr));
+      gap: 12px;
+      max-width: 1200px;
+      margin: auto;
+    }
+
+    .heart {
+      width: 45px;
+      height: 45px;
+      background: #ff4d6d;
+      clip-path: polygon(50% 80%, 0% 40%, 20% 0%, 50% 20%, 80% 0%, 100% 40%);
+      cursor: pointer;
+      position: relative;
+      transition: transform 0.3s ease, background 0.3s ease;
+      animation: pulse 2s infinite;
+    }
+
+    .heart:hover {
+      transform: scale(1.15);
+    }
+
+    .heart.clicked {
+      pointer-events: none;
+    }
+
+    .heart.correct {
+      background: #ff80ab;
+      transform: scale(1.3);
+      animation: pop 0.4s ease;
+      box-shadow: 0 0 20px rgba(255, 0, 102, 0.8);
+    }
+
+    .heart.wrong::after {
+      content: "✖";
+      color: white;
+      font-size: 1.5rem;
+      font-weight: bold;
+      position: absolute;
+      top: 22%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      animation: fadeIn 0.2s ease;
+    }
+
+    .heart.wrong {
+      background: #ffc2d1;
+      animation: shake 0.3s;
+    }
+
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-5px); }
+      50% { transform: translateX(5px); }
+      75% { transform: translateX(-3px); }
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+    }
+
+    @keyframes pop {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.6); }
+      100% { transform: scale(1.3); }
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    .message {
+      display: none;
+      background: #fff0f6;
+      padding: 20px;
+      border-radius: 12px;
+      font-size: 1.3rem;
+      color: #6a0572;
+      margin: 20px auto;
+      max-width: 80%;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      animation: fadeInBounce 0.5s ease forwards;
+    }
+
+    @keyframes fadeInBounce {
+      0% { opacity: 0; transform: translateY(20px) scale(0.9); }
+      60% { opacity: 1; transform: translateY(-5px) scale(1.05); }
+      100% { transform: translateY(0) scale(1); }
+    }
+
+    .win-message {
+      display: none;
+      font-size: 1.6rem;
+      color: #b4004e;
+      margin-top: 30px;
+      animation: fadeInBounce 0.6s ease forwards;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>💘 Love Hunt 💘</h1>
+  <div class="instructions">There are 3 hearts hiding sweet love notes. Can you find them?</div>
+
+  <div class="heart-grid" id="heartGrid"></div>
+
+  <div class="message" id="loveMessage"></div>
+  <div class="win-message" id="winMessage">🎉 You found all the love notes! Happy anniversary, my love 💖</div>
+
+  <script>
+    const totalHearts = 105;
+    const heartGrid = document.getElementById('heartGrid');
+    const loveMessage = document.getElementById('loveMessage');
+    const winMessage = document.getElementById('winMessage');
+
+    const messages = [
+      "I love you and will forever promise to love you ❤️",
+      "Hello beautiful, I'm lucky to call you mine 🥰",
+      "You're my everything, forever and always 💞"
+    ];
+
+    let found = 0;
+
+    const correctIndexes = [];
+    while (correctIndexes.length < 3) {
+      let rand = Math.floor(Math.random() * totalHearts);
+      if (!correctIndexes.includes(rand)) {
+        correctIndexes.push(rand);
+      }
+    }
+
+    for (let i = 0; i < totalHearts; i++) {
+      const heart = document.createElement('div');
+      heart.classList.add('heart');
+
+      heart.addEventListener('click', () => {
+        if (heart.classList.contains('clicked')) return;
+        heart.classList.add('clicked');
+
+        if (correctIndexes.includes(i)) {
+          heart.classList.add('correct');
+          loveMessage.style.display = 'block';
+          loveMessage.textContent = messages[correctIndexes.indexOf(i)];
+          found++;
+
+          if (found === 3) {
+            winMessage.style.display = 'block';
+          }
+        } else {
+          heart.classList.add('wrong');
+        }
+      });
+
+      heartGrid.appendChild(heart);
+    }
+  </script>
+
+</body>
+</html>

@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en" >
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Red & Blue Interactive Timeline</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@600&family=Fredoka+One&display=swap');
+
+    /* Reset & base */
+    * {
+      box-sizing: border-box;
+    }
+    body {
+      background: #f0f4f8;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      margin: 0;
+      padding: 50px 20px;
+      display: flex;
+      justify-content: center;
+      color: #222;
+      min-height: 100vh;
+    }
+
+    .container {
+      max-width: 540px;
+      width: 100%;
+      position: relative;
+    }
+
+    /* Timeline vertical line */
+    .timeline {
+      position: relative;
+      padding-left: 50px;
+      border-left: 3px solid #a8c0d8; /* soft blue */
+      margin-top: 60px;
+      min-height: 320px;
+    }
+
+    /* Circles on timeline */
+    .week-circle {
+      position: absolute;
+      left: -33px;
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      background: #d4e1f2; /* pale blue */
+      box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+      color: #457b9d; /* strong blue */
+      font-family: 'Fredoka One', cursive;
+      font-weight: 700;
+      font-size: 1.1rem;
+      line-height: 38px;
+      text-align: center;
+      transition: all 0.4s ease;
+      cursor: default;
+      user-select: none;
+      top: 0;
+    }
+    .week-circle[data-index="1"] { top: 85px; }
+    .week-circle[data-index="2"] { top: 170px; }
+    .week-circle[data-index="3"] { top: 255px; }
+
+    .week-circle.active {
+      background: #e63946; /* bright red */
+      color: white;
+      box-shadow: 0 0 15px rgba(230, 57, 70, 0.6);
+      animation: pulse 2.5s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.15); }
+    }
+
+    /* Content cards */
+    .week-content {
+      position: absolute;
+      left: 50px;
+      right: 0;
+      top: 0;
+      background: #f8fbff; /* very light blue-white */
+      padding: 25px 30px;
+      border-radius: 16px;
+      box-shadow: 0 6px 12px rgba(70, 130, 180, 0.15); /* subtle blue shadow */
+      opacity: 0;
+      pointer-events: none;
+      transform: translateX(-25px);
+      transition: 
+        opacity 0.5s ease, 
+        transform 0.5s ease;
+      min-height: 130px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      color: #2a3a52; /* dark blue-gray */
+      font-weight: 600;
+      font-size: 1.1rem;
+      line-height: 1.4;
+      user-select: none;
+    }
+    .week-content.active {
+      opacity: 1;
+      pointer-events: auto;
+      position: relative;
+      transform: translateX(0);
+    }
+
+    /* Headings */
+    h2 {
+      font-family: 'Fredoka One', cursive;
+      font-weight: 700;
+      font-size: 1.6rem;
+      margin: 0 0 12px;
+      color: #e63946; /* red */
+      user-select: text;
+    }
+
+    /* Arrows container above timeline */
+    .nav-arrows {
+      display: flex;
+      justify-content: center;
+      gap: 60px;
+      margin-bottom: 15px;
+      user-select: none;
+    }
+
+    /* Arrow style */
+    .arrow {
+      background: #e63946; /* red */
+      color: white;
+      font-size: 2.6rem;
+      width: 65px;
+      height: 65px;
+      border-radius: 50%;
+      border: none;
+      outline: none;
+      cursor: pointer;
+      box-shadow: 0 4px 16px rgba(230, 57, 70, 0.5);
+      transition: 
+        background-color 0.3s ease, 
+        transform 0.25s ease,
+        box-shadow 0.3s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .arrow:hover:not(:disabled) {
+      background-color: #a8323b;
+      transform: scale(1.2);
+      box-shadow: 0 0 24px 4px #a8323bcc;
+    }
+    .arrow:active:not(:disabled) {
+      animation: popArrow 0.15s ease forwards;
+    }
+    @keyframes popArrow {
+      0% { transform: scale(1.2); }
+      50% { transform: scale(1.4); }
+      100% { transform: scale(1.2); }
+    }
+    .arrow:disabled {
+      background: #ef9a9a88;
+      cursor: default;
+      box-shadow: none;
+      transform: scale(1);
+    }
+
+    .glow-surprise {
+  box-shadow:
+    0 0 20px 6px #e63946aa,
+    0 0 40px 12px #e63946bb;
+  animation: pulseGlow 2.5s infinite ease-in-out;
+}
+
+@keyframes pulseGlow {
+  0%, 100% { box-shadow:
+    0 0 20px 6px #e63946aa,
+    0 0 40px 12px #e63946bb; }
+  50% { box-shadow:
+    0 0 28px 9px #e63946cc,
+    0 0 48px 15px #e63946dd; }
+}
+.continue{
+  background: #e63946; /* red */
+      color: white;
+      font-size: 2.6rem;
+      width: 255px;
+      height: 155px;
+      border-radius: 50%;
+      border: none;
+      outline: none;
+      cursor: pointer;
+      box-shadow: 0 4px 16px rgba(230, 57, 70, 0.5);
+      transition: 
+        background-color 0.3s ease, 
+        transform 0.25s ease,
+        box-shadow 0.3s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      top: 700px;
+      left: 200px;
+}
+  </style>
+</head>
+<body>
+  <div class="container" role="main">
+    <a href="Love6.html">
+    <button class="continue">Continue ></button>
+    </a>
+
+    <div class="nav-arrows" role="navigation" aria-label="Timeline navigation">
+      <button class="arrow" id="prevArrow" aria-label="Previous week" disabled>‹</button>
+      <button class="arrow" id="nextArrow" aria-label="Next week">›</button>
+    </div>
+
+    <div class="timeline" aria-label="Anniversary timeline">
+      <div class="week-circle active" data-index="0" aria-current="true">W1</div>
+      <div class="week-circle" data-index="1">W2</div>
+      <div class="week-circle" data-index="2">W3</div>
+      <div class="week-circle" data-index="3">W4</div>
+
+      <div class="week-content active" data-index="0" role="region" aria-live="polite" tabindex="0">
+        <h2>Week 1</h2>
+        <p>
+      During the first week of our relationship, I didn’t quite know how to express my love — I just wanted to be there for you.  
+     Everything was new to me, but you made me feel safe and at home.  
+     That’s when I realized just how much you mean to me and how deeply I’ve come to love you,  
+        and how much I want you in my life forever.
+        </p>
+      </div>
+
+      <div class="week-content" data-index="1" role="region" aria-live="polite" tabindex="0">
+        <h2>Week 2</h2>
+       <p>
+        This week, I started feeling truly happy — a happiness I hadn’t felt in a long time.  
+        For so long, I believed I was unlovable, but you proved me so wrong.  
+        Every moment with you was pure joy, and I’m so grateful for that.  
+        I also began to feel comfortable enough to share sweet little nicknames with you.
+        </p>
+      </div>
+
+      <div class="week-content" data-index="2" role="region" aria-live="polite" tabindex="0">
+        <h2>Week 3</h2>
+    <p>
+        This week, I realized just how much you’ve done for me and how deeply you’ve touched my heart.  
+        You’re the first person who’s truly appreciated me and wanted me around.  
+        I know you deserve the whole world and more, and I’m willing to do everything I can to give it to you.  
+        I also couldn’t wait for our anniversary, because it would be the first time I’d ever receive a gift like that — from you.
+    </p>
+      </div>
+
+      <div class="week-content" data-index="3" role="region" aria-live="polite" tabindex="0">
+        <h2>Week 4</h2>
+        <p>
+             We’ve reached one month together, and I just want to say — happy anniversary, my love 💖.  
+             I hope this is only the beginning, and that we continue growing from months into years, side by side.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const weeks = document.querySelectorAll('.week-content');
+    const circles = document.querySelectorAll('.week-circle');
+    const prevBtn = document.getElementById('prevArrow');
+    const nextBtn = document.getElementById('nextArrow');
+
+    let currentIndex = 0;
+
+    function updateView() {
+      weeks.forEach((week, i) => {
+        week.classList.toggle('active', i === currentIndex);
+        circles[i].classList.toggle('active', i === currentIndex);
+        circles[i].setAttribute('aria-current', i === currentIndex ? 'true' : 'false');
+      });
+
+      prevBtn.disabled = currentIndex === 0;
+      nextBtn.disabled = currentIndex === weeks.length - 1;
+    }
+
+    prevBtn.addEventListener('click', () => {
+      if (currentIndex > 0) {
+        currentIndex--;
+        updateView();
+        weeks[currentIndex].focus();
+      }
+    });
+
+    nextBtn.addEventListener('click', () => {
+      if (currentIndex < weeks.length - 1) {
+        currentIndex++;
+        updateView();
+        weeks[currentIndex].focus();
+      }
+    });
+
+    updateView();
+
+    function updateView() {
+  weeks.forEach((week, i) => {
+    week.classList.toggle('active', i === currentIndex);
+    circles[i].classList.toggle('active', i === currentIndex);
+    circles[i].setAttribute('aria-current', i === currentIndex ? 'true' : 'false');
+
+    // Remove glowing effect always, then add only on week 4
+    week.classList.remove('glow-surprise');
+  });
+
+  prevBtn.disabled = currentIndex === 0;
+  nextBtn.disabled = currentIndex === weeks.length - 1;
+
+  if (currentIndex === 3) { // Week 4 surprise
+    const week4 = weeks[3];
+    week4.classList.add('glow-surprise');
+    showConfetti();
+    showAnniversaryPopup();
+  }
+}
+
+function showConfetti() {
+  // Fire confetti from center, multiple bursts
+  confetti({
+    particleCount: 100,
+    spread: 70,
+    origin: { y: 0.6 }
+  });
+}
+
+function showAnniversaryPopup() {
+  if (document.getElementById('popup')) return; // avoid multiple popups
+  const popup = document.createElement('div');
+  popup.id = 'popup';
+  popup.textContent = "🎉 Happy Anniversary! 🎉";
+  popup.style.position = 'fixed';
+  popup.style.top = '20px';
+  popup.style.left = '50%';
+  popup.style.transform = 'translateX(-50%)';
+  popup.style.background = '#e63946';
+  popup.style.color = 'white';
+  popup.style.fontSize = '2rem';
+  popup.style.padding = '15px 35px';
+  popup.style.borderRadius = '40px';
+  popup.style.boxShadow = '0 4px 20px rgba(230,57,70,0.8)';
+  popup.style.zIndex = '9999';
+  popup.style.fontFamily = "'Fredoka One', cursive";
+  popup.style.userSelect = 'none';
+  popup.style.opacity = '0';
+  popup.style.transition = 'opacity 0.5s ease';
+
+  document.body.appendChild(popup);
+
+  // Fade in
+  setTimeout(() => {
+    popup.style.opacity = '1';
+  }, 100);
+
+  // Fade out & remove after 4 seconds
+  setTimeout(() => {
+    popup.style.opacity = '0';
+    setTimeout(() => popup.remove(), 600);
+  }, 4000);
+}
+
+  </script>
+</body>
+</html>

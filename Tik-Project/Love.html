@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Love</title>
+  <style>
+    body {
+  margin: 0;
+  padding: 0;
+  background: linear-gradient(135deg, #ffe4f0, #f8d4ff);
+  background-size: 400% 400%;
+  animation: softGlow 15s ease-in-out infinite alternate;
+  font-family: 'Comic Sans MS', cursive, sans-serif;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  overflow: hidden;
+}
+
+@keyframes softGlow {
+  0% {
+    background-position: 0% 50%;
+  }
+  100% {
+    background-position: 100% 50%;
+  }
+}
+
+    .love-button {
+  position: absolute;
+  font-size: 20px;
+  padding: 12px 25px;
+  background-color: #ff69b4;
+  color: white;
+  border: none;
+  border-radius: 50px;
+  cursor: pointer;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+  opacity: 0;
+  transition: transform 0.2s ease;
+  z-index: 10;
+}
+
+.love-button.show {
+  animation: pop 0.4s ease forwards;
+}
+
+@keyframes pop {
+  0% {
+    transform: scale(0.5);
+    opacity: 0;
+  }
+  60% {
+    transform: scale(1.2);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+    .love-button.show {
+      opacity: 1;
+      transform: scale(1.05);
+    }
+
+    .gif-container {
+      position: absolute;
+      top: 330px;
+      display: flex;
+      justify-content: center;
+      width: 100%;
+    }
+
+    .kitty {
+      width: 300px;
+      animation: float 3s ease-in-out infinite;
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
+    }
+
+   body.magic-mode {
+  background: linear-gradient(135deg, #ffb6f2, #cfa0ff, #ffa4c1);
+  background-size: 500% 500%;
+  animation: magicPulse 6s ease-in-out infinite alternate;
+}
+
+@keyframes magicPulse {
+  0% {
+    background-position: 0% 50%;
+    filter: brightness(1);
+  }
+  100% {
+    background-position: 100% 50%;
+    filter: brightness(1.1);
+  }
+}
+
+@keyframes dreamy {
+  0% {
+    background: linear-gradient(135deg, #ff9a9e, #fad0c4, #fbc2eb);
+    background-position: 0% 50%;
+  }
+  100% {
+    background: linear-gradient(135deg, #fbc2eb, #a18cd1, #fad0c4);
+    background-position: 100% 50%;
+  }
+}
+
+/* 💌 Final Message Styling */
+#final-message {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 3rem;
+  color: #fff;
+  text-shadow: 0 0 20px #ff69b4;
+  text-align: center;
+  z-index: 100;
+  opacity: 0;
+  transition: opacity 1s ease;
+  pointer-events: none;
+}
+body.magic-mode .kitty {
+  filter: drop-shadow(0 0 20px #ff69b4);
+}
+#final-message.show {
+  opacity: 1;
+}
+
+.hidden {
+  display: none;
+}
+
+  </style>
+</head>
+<body>
+
+  <section class="Love-buttons">
+    <button class="love-button">I</button>
+    <button class="love-button">Love</button>
+    <button class="love-button">You</button>
+    <button class="love-button">So</button>
+    <button class="love-button">Much</button>
+    <button class="love-button">That</button>
+    <button class="love-button">Words</button>
+    <button class="love-button">Can</button>
+    <button class="love-button">Not</button>
+    <button class="love-button">Describe</button>
+    <button class="love-button">The feeling but</button>
+    <button class="love-button">I will try</button>
+    <button class="love-button">My best</button>
+    <button class="love-button">To explain it</button>
+    <button class="love-button">And also show</button>
+    <button class="love-button">It to you</button>
+    <button class="love-button">You deserve the</button>
+    <button class="love-button">The world and</button>
+    <a href="Love4.html">
+    <button class="love-button">More 💖</button>
+    </a>
+  </section>
+
+  <div id="final-message" class="hidden">
+  <h1>You mean the world to me I LOVE YOU MWAH💖</h1>
+</div>
+
+  <div class="gif-container">
+    <img src="mochi-cat.gif" alt="Mochi Cat" class="kitty">
+  </div>
+
+  <script>
+    const buttons = document.querySelectorAll(".love-button");
+    let index = 0;
+
+    function placeRandomly(button) {
+  const padding = 50;
+  const gif = document.querySelector('.kitty');
+  const gifRect = gif.getBoundingClientRect();
+
+  let x, y;
+  const maxX = window.innerWidth - button.offsetWidth - padding;
+  const maxY = window.innerHeight - button.offsetHeight - padding;
+
+  let tries = 0;
+  const maxTries = 100;
+
+  do {
+    x = Math.random() * maxX + padding / 2;
+    y = Math.random() * maxY + padding / 2;
+
+    const btnRect = {
+      left: x,
+      top: y,
+      right: x + button.offsetWidth,
+      bottom: y + button.offsetHeight
+    };
+
+    const overlap = !(
+      btnRect.right < gifRect.left ||
+      btnRect.left > gifRect.right ||
+      btnRect.bottom < gifRect.top ||
+      btnRect.top > gifRect.bottom
+    );
+
+    if (!overlap) break;
+
+    tries++;
+  } while (tries < maxTries);
+
+  button.style.left = `${x}px`;
+  button.style.top = `${y}px`;
+}
+
+    function showNextButton() {
+  if (index >= buttons.length) return;
+
+  const btn = buttons[index];
+  placeRandomly(btn);
+  btn.classList.add("show");
+
+  btn.addEventListener("click", () => {
+    // Check if it's "The world and"
+    if (btn.innerText === "The world and") {
+      triggerMagic();
+    }
+
+    btn.classList.remove("show");
+    index++;
+    showNextButton();
+  });
+}
+
+    // Start the magic
+    showNextButton();
+
+    function triggerMagic() {
+  // Add magic background
+  document.body.classList.add("magic-mode");
+
+  // Show the glowing love message
+  const message = document.getElementById("final-message");
+  message.classList.remove("hidden");
+  message.classList.add("show");
+
+  // Create some floating hearts
+  for (let i = 0; i < 20; i++) {
+    const heart = document.createElement("div");
+    heart.textContent = "💖";
+    heart.style.position = "fixed";
+    heart.style.left = Math.random() * 100 + "vw";
+    heart.style.top = "100vh";
+    heart.style.fontSize = "24px";
+    heart.style.animation = `floatUp ${2 + Math.random() * 3}s linear forwards`;
+    document.body.appendChild(heart);
+
+    setTimeout(() => heart.remove(), 5000);
+  }
+}
+
+// Floating heart animation
+const style = document.createElement('style');
+style.textContent = `
+@keyframes floatUp {
+  0% { transform: translateY(0); opacity: 1; }
+  100% { transform: translateY(-120vh); opacity: 0; }
+}`;
+document.head.appendChild(style);
+  </script>
+
+</body>
+</html>

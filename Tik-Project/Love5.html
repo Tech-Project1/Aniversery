@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Anniversary Pac-Man</title>
+  <style>
+    body {
+      background: linear-gradient(135deg, #ff4d4d, #3399ff);
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      font-family: 'Comic Sans MS', cursive, sans-serif;
+      height: 100vh;
+      overflow-x: hidden;
+      position: relative;
+    }
+    h1 {
+      margin: 20px;
+      color: #fff;
+      text-shadow: 2px 2px 5px #000;
+    }
+    canvas {
+      border: 5px solid white;
+      background-color: black;
+      box-shadow: 0 0 20px white;
+    }
+    #message {
+      margin-top: 20px;
+      color: white;
+      font-size: 1.6em;
+      text-align: center;
+      text-shadow: 2px 2px 4px #000;
+    }
+    #celebration {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      pointer-events: none;
+      z-index: 1000;
+      overflow: visible;
+    }
+    .confetti, .heart {
+      position: absolute;
+      width: 12px;
+      height: 12px;
+      opacity: 0.85;
+      will-change: transform, opacity;
+      animation-timing-function: linear;
+      pointer-events: none;
+    }
+    .confetti {
+      border-radius: 50%;
+      background: #ff4d4d;
+      animation-name: fallRotate;
+      animation-duration: 4s;
+      animation-iteration-count: infinite;
+    }
+    .confetti.alt {
+      background: #3399ff;
+      animation-duration: 5s;
+    }
+    .heart {
+      background: none;
+      animation-name: fallFloat;
+      animation-duration: 6s;
+      animation-iteration-count: infinite;
+      color: #ff66cc;
+      font-size: 14px;
+      user-select: none;
+      font-weight: bold;
+      filter: drop-shadow(0 0 2px #f0a);
+    }
+
+    @keyframes fallRotate {
+      0% { transform: translateY(-30px) rotate(0deg); opacity: 1; }
+      100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+    }
+    @keyframes fallFloat {
+      0% { transform: translateY(-30px) translateX(0) rotate(0deg); opacity: 1; }
+      50% { transform: translateY(50vh) translateX(10px) rotate(180deg); opacity: 0.8; }
+      100% { transform: translateY(100vh) translateX(0) rotate(360deg); opacity: 0; }
+    }
+  </style>
+</head>
+<body>
+  <h1>💘 Anniversary Pac-Man 💘</h1>
+  <canvas id="game" width="480" height="480"></canvas>
+  <div id="message"></div>
+  <div id="celebration"></div>
+  <script>
+    const canvas = document.getElementById("game");
+    const ctx = canvas.getContext("2d");
+    const tileSize = 24;
+    const confettiContainer = document.getElementById("celebration");
+
+    const map = [
+      "####################",
+      "#P . . .##. . . . .#",
+      "#.##.####...##.##.#",
+      "#........##........#",
+      "#.##.#.######.#.##.#",
+      "#....#..##..#......#",
+      "####.####..###.####",
+      "#.................#",
+      "#.####.##.##.####.#",
+      "#........E........#",
+      "####################"
+    ];
+
+    const player = { x: 1, y: 1 };
+    const ghosts = [
+      { x: 9, y: 9, speedCounter: 0 }
+    ];
+    let score = 0;
+    let totalDots = 0;
+    let won = false;
+    let celebrationInterval;
+
+    function countDots() {
+      totalDots = 0;
+      for (let row of map) {
+        for (let ch of row) {
+          if (ch === '.') totalDots++;
+        }
+      }
+    }
+
+    function draw() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      for (let y = 0; y < map.length; y++) {
+        for (let x = 0; x < map[y].length; x++) {
+          const ch = map[y][x];
+          if (ch === '#') {
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(x * tileSize, y * tileSize, tileSize, tileSize);
+          } else if (ch === '.') {
+            ctx.fillStyle = 'yellow';
+            ctx.beginPath();
+            ctx.arc(x * tileSize + 12, y * tileSize + 12, 3, 0, Math.PI * 2);
+            ctx.fill();
+          }
+        }
+      }
+      ctx.fillStyle = '#ff4d4d';
+      ctx.beginPath();
+      ctx.arc(player.x * tileSize + 12, player.y * tileSize + 12, 10, 0.25 * Math.PI, 1.75 * Math.PI);
+      ctx.lineTo(player.x * tileSize + 12, player.y * tileSize + 12);
+      ctx.fill();
+
+      ctx.fillStyle = '#3399ff';
+      for (let g of ghosts) {
+        ctx.beginPath();
+        ctx.arc(g.x * tileSize + 12, g.y * tileSize + 12, 10, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+
+    function movePlayer(dx, dy) {
+      if (won) return;
+      const nx = player.x + dx;
+      const ny = player.y + dy;
+      if (map[ny][nx] === '#') return;
+
+      if (map[ny][nx] === '.') {
+        score++;
+        map[ny] = map[ny].substring(0, nx) + ' ' + map[ny].substring(nx + 1);
+        if (score === totalDots) {
+          winGame();
+        }
+      }
+      player.x = nx;
+      player.y = ny;
+    }
+
+    function ghostMove() {
+      for (let g of ghosts) {
+        g.speedCounter = (g.speedCounter + 1) % 90; // super slow
+        if (g.speedCounter !== 0) return;
+
+        const dx = player.x > g.x ? 1 : player.x < g.x ? -1 : 0;
+        const dy = player.y > g.y ? 1 : player.y < g.y ? -1 : 0;
+        const nx = g.x + dx;
+        const ny = g.y + dy;
+        if (map[ny][nx] !== '#') {
+          g.x = nx;
+          g.y = ny;
+        }
+        if (g.x === player.x && g.y === player.y) {
+          document.getElementById("message").innerText = "💀 Oops! Ghost caught you. Try again!";
+          player.x = 1;
+          player.y = 1;
+          score = 0;
+          init();
+        }
+      }
+    }
+
+    function createConfetti() {
+      const confetti = document.createElement("div");
+      confetti.className = "confetti " + (Math.random() < 0.5 ? "alt" : "");
+      confetti.style.left = Math.random() * window.innerWidth + "px";
+      confetti.style.top = "-20px";
+      confetti.style.animationDuration = (3 + Math.random() * 3) + "s";
+      confettiContainer.appendChild(confetti);
+
+      setTimeout(() => {
+        confetti.remove();
+      }, 6000);
+    }
+
+    function createHeart() {
+      const heart = document.createElement("div");
+      heart.className = "heart";
+      heart.style.left = Math.random() * window.innerWidth + "px";
+      heart.style.top = "-20px";
+      heart.style.animationDuration = (4 + Math.random() * 3) + "s";
+      heart.textContent = "❤️";
+      confettiContainer.appendChild(heart);
+
+      setTimeout(() => {
+        heart.remove();
+      }, 7000);
+    }
+
+    function startCelebration() {
+      if (celebrationInterval) clearInterval(celebrationInterval);
+      celebrationInterval = setInterval(() => {
+        createConfetti();
+        createHeart();
+      }, 200);
+    }
+
+    function winGame() {
+      won = true;
+      document.getElementById("message").innerHTML = `
+        <h2 style="color:#ffccff; font-size:2em; animation: pulse 1.5s infinite alternate;">
+          🎉 Happy Anniversary! 🎉
+        </h2>
+        <p style="font-size:1.3em;">
+          You have the key to my heart 💖<br>Come in anytime you want.<br>Can't wait for more memories with you!
+        </p>
+      `;
+      startCelebration();
+    }
+
+    // pulse animation for message
+    const style = document.createElement('style');
+    style.textContent = `
+      @keyframes pulse {
+        0% { text-shadow: 0 0 5px #ff66cc; }
+        100% { text-shadow: 0 0 20px #ff3399; }
+      }
+    `;
+    document.head.appendChild(style);
+
+    window.addEventListener("keydown", (e) => {
+      if (e.key === "ArrowUp") movePlayer(0, -1);
+      else if (e.key === "ArrowDown") movePlayer(0, 1);
+      else if (e.key === "ArrowLeft") movePlayer(-1, 0);
+      else if (e.key === "ArrowRight") movePlayer(1, 0);
+      draw();
+    });
+
+    function init() {
+      ghosts[0].x = 9;
+      ghosts[0].y = 9;
+      countDots();
+      draw();
+    }
+
+    function loop() {
+      ghostMove();
+      draw();
+      requestAnimationFrame(loop);
+    }
+
+    init();
+    loop();
+  </script>
+</body>
+</html>
